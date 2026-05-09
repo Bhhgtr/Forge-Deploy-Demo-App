@@ -33,5 +33,4 @@ app.get('/sum', (_req, res) => {
   });
 });
 
-
 export {app, count};
