@@ -1,7 +1,8 @@
 import express from "express";
 
 const app = express();
-const port = 3000;
+
+let count = 0;
 
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok - Application reached" });
@@ -25,6 +26,12 @@ app.get("/error", (_req, res) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+app.get('/sum', (_req, res) => {
+  res.status(200).json({
+    status: 'sum',
+    sum: ++count,
+  });
 });
+
+
+export {app, count};
