@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import request from 'supertest';
-import { app, count } from '../src/index.js';
+import { app, count } from '../index.js';
 
 describe('GET /sum', () => {
   it('should return incremental value', async () => {
