@@ -41,7 +41,7 @@ jobs:
 
       - name: Clone GitOps repo
         run: |
-          git clone https://github.com/${{ env.OWNER_LOWER }}/forge-deploy-environment.git gitops
+          git clone https://${{ secrets.GITOPS_PAT }}@github.com/${{ env.OWNER_LOWER }}/forge-deploy-environment.git gitops
 
       - name: Update image in GitOps manifests
         run: |
@@ -56,5 +56,6 @@ jobs:
           git add .
           git commit -m "release(demo-app): ${{ env.IMAGE_TAG }}" || echo "No changes to commit"
           git push
+
 
           
