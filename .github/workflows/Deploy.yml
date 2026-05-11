@@ -1,0 +1,58 @@
+name: Deploy Demo App
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        run: echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Login to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+          docker login ghcr.io \
+            -u ${{ github.actor }} \
+            --password-stdin
+
+      - name: Set lowercase owner
+        run: echo "OWNER_LOWER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ghcr.io/${{ env.OWNER_LOWER }}/demo-app:${{ env.IMAGE_TAG }} \
+            .
+
+      - name: Push image to GitHub Container Registry
+        run: |
+          docker push ghcr.io/${{ env.OWNER_LOWER }}/demo-app:${{ env.IMAGE_TAG }}
+
+      - name: Clone GitOps repo
+        run: |
+          git clone https://${{ secrets.GITOPS_PAT }}@github.com/${{ env.OWNER_LOWER }}/forge-deploy-environment.git gitops
+
+      - name: Update image in GitOps manifests
+        run: |
+          cd gitops/apps/demo-app
+          sed -i "s|image: .*|image: ghcr.io/${{ env.OWNER_LOWER }}/demo-app:${{ env.IMAGE_TAG }}|" rollout.yaml
+
+      - name: Commit and push GitOps changes
+        run: |
+          cd gitops
+          git config user.name "demo-app-ci"
+          git config user.email "ci@forgedeploy.local"
+          git add .
+          git commit -m "release(demo-app): ${{ env.IMAGE_TAG }}" || echo "No changes to commit"
+          git push
