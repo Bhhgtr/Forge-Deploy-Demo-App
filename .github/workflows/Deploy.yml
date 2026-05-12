@@ -46,7 +46,7 @@ jobs:
       - name: Update image in GitOps manifests
         run: |
           cd gitops/apps/demo-app
-          sed -i "s|image: .*|image: ghcr.io/${{ env.OWNER_LOWER }}/demo-app:${{ env.IMAGE_TAG }}|" deployment.yml
+          sed -i "s|image: .*|image: ghcr.io/${{ env.OWNER_LOWER }}/demo-app:${{ env.IMAGE_TAG }}|" rollout.yml
 
       - name: Commit and push GitOps changes
         run: |
